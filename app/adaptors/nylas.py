@@ -17,10 +17,10 @@ class Nylas(Adaptor):
     }
 
   def generate_authentication_url(self):
+    # type: () -> Union[str, Response]
     """
     Nylas hosted authentication docs: https://developer.nylas.com/docs/api/v3/admin/#get-/v3/connect/auth
     """
-    # type: () -> Union[str, Response]
     try:
       authentication_params = {
         "client_id": self.client_id,
@@ -32,3 +32,23 @@ class Nylas(Adaptor):
       return response.url
     except Exception as e:
       return error_response(str(e), 503)
+    
+  def exchange_code_for_token(self, code):
+    """
+    Nylas Token exchange: https://developer.nylas.com/docs/v3/auth/hosted-oauth-accesstoken/#exchange-code-for-access-token
+    """
+    # type: (str) -> Union[Dict[str, Any], Response]
+    try:
+      code_exchange_url = f"{self.base_url}/connect/token"
+      payload = {
+        "client_id": self.client_id,
+        "client_secret": self.api_key,
+        "redirect_uri": self.redirect_uri,
+        "grant_type": "authorization_code",
+        "code": code
+      }
+      response = requests.post(code_exchange_url, json=payload)
+      result = response.json()
+      return result
+    except Exception as e:
+      return error_response("An error occurred during authentication", status_code=503, errors=str(e))
