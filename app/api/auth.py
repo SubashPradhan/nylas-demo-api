@@ -1,24 +1,15 @@
 from flask import Blueprint, Response, current_app
 from app.utils.response_utils import error_response, success_response
 from app.utils.jwt_utils import generate_jwt_token
-from flask import request
-import jwt
-
+from app.api import verify_user_and_token
+from typing import Dict, Any, Union
 auth = Blueprint("auth", __name__)
 
 @auth.route("/user", methods=["GET"])
-def get_user_info():
-  # type: () -> Response
-  token = request.cookies.get("token")
-  print("What is happening",token)
-  if not token:
-    return error_response("Unauthorized", 401)
-  
-  try:
-    decoded_token = jwt.decode(token, current_app.config["JWT_SECRET_KEY"], algorithms=["HS256"])
-    print("This is decoded token", decoded_token)
+@verify_user_and_token
+def get_user_info(decoded_token):
+  # type: (Union[Dict[str,Any], None]) -> Response
+  if decoded_token:
     return success_response(decoded_token)
-  except jwt.ExpiredSignatureError:
-    return error_response("Token has expired please reauthenticate", 401)
-  except jwt.InvalidTokenError:
+  else:
     return error_response("Invalid token", 401)

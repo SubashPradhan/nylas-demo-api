@@ -31,15 +31,16 @@ def callback_uri():
     nylas_adaptor = get_nylas_client()
     response = nylas_adaptor.exchange_code_for_token(code)
     grant_id = response.get("grant_id")
+    email = response.get("email")
     payload = {
       "grant_id": grant_id,
+      "email": email,
       "exp": datetime.datetime.now() + datetime.timedelta(hours=1)
     }
     token = generate_jwt_token(payload)
     frontend_url = "http://localhost:3000/nylas-demo"
     resp = make_response(redirect(frontend_url))
     resp.set_cookie("token", token, httponly=True, secure=False)
-    resp.set_cookie("grant_id", grant_id, httponly=True, secure=False)
     return resp
   except Exception as e:
     log.error("Authentication failed during code exchange", str(e))
