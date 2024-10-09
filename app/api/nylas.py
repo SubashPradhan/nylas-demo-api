@@ -5,7 +5,7 @@ from app.utils.jwt_utils import generate_jwt_token
 from flask import request
 import datetime
 import logging
-
+from app.api import verify_user_and_token
 
 log = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ def register_mailbox():
     return error_response("An error occurred while generating authentication url, please try again", status_code=503, errors=str(e))
   
 
-@nylas.route("callback", methods=["GET"])
+@nylas.route("/callback", methods=["GET"])
 def callback_uri():
   # type: () -> None
   try:
@@ -46,4 +46,30 @@ def callback_uri():
     log.error("Authentication failed during code exchange", str(e))
     return error_response("Authentication failed", status_code=503, errors=str(e))
 
+@nylas.route("/threads", methods=["GET"])
+@verify_user_and_token
+def get_threads(decoded_token):
+  try:
+    next_cursor = request.args.get("next_cursor")
+    folder = request.args.get("folder")
+    grant_id = decoded_token.get("grant_id")
+    nylas_adaptor = get_nylas_client()
+    threads = nylas_adaptor.get_threads_by_grant_id(grant_id, next_cursor, folder)
+    return success_response(threads)
+  except Exception as e:
+    log.error("Threads fetching failed", str(e))
+    return error_response("Failed to fetch threads", 503, errors=str(e))
+
+
+@nylas.route("/folders", methods=["GET"])
+@verify_user_and_token
+def get_folders(decoded_token):
+  try:
+    grant_id = decoded_token.get("grant_id")
+    nylas_adaptor = get_nylas_client()
+    folders = nylas_adaptor.get_folders_by_grant_id(grant_id)
+    return success_response(folders)
+  except Exception as e:
+    log.error("Folders fetching failed", str(e))
+    return error_response("Failed to fetch folders", 503, errors=str(e))
 
