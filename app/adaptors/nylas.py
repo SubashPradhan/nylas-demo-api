@@ -2,6 +2,7 @@ from app.adaptors.adaptor import Adaptor
 from flask import current_app, Response
 from typing import Union, Dict, Any
 from app.utils.response_utils import error_response
+from app.utils.response_utils import success_response
 import requests
 import logging
 
@@ -83,3 +84,17 @@ class Nylas(Adaptor):
     except Exception as e:
       log.error("An error occurred while fetching folders", str(e))
       return error_response("An error occurred while fetching folders using Nylas API", 503, errors=str(e))
+    
+  def send_email(self, grant_id, send_payload):
+    # type: (str, Dict[str, Any]) -> Union[Dict[str, Any], Response]
+    """
+    Send message using Nylas: https://developer.nylas.com/docs/api/v3/ecc/#post-/v3/grants/-grant_id-/messages/send
+    """
+    try:
+      send_url = f"{self.base_url}/grants/{grant_id}/messages/send"
+      response = requests.post(send_url, json=send_payload, headers=self.headers)
+      if response.status_code == 200:
+        return success_response()
+    except Exception as e:
+      log.error("An error occurred while sending email using Nylas API", str(e))
+      return error_response("An error occurred while sending message", 503, errors=str(e))
