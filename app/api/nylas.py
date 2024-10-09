@@ -50,12 +50,26 @@ def callback_uri():
 @verify_user_and_token
 def get_threads(decoded_token):
   try:
+    next_cursor = request.args.get("next_cursor")
+    folder = request.args.get("folder")
     grant_id = decoded_token.get("grant_id")
     nylas_adaptor = get_nylas_client()
-    threads = nylas_adaptor.get_threads_by_grant_id(grant_id)
-    threads_data = threads["data"]
-    return success_response(threads_data)
+    threads = nylas_adaptor.get_threads_by_grant_id(grant_id, next_cursor, folder)
+    return success_response(threads)
   except Exception as e:
     log.error("Threads fetching failed", str(e))
     return error_response("Failed to fetch threads", 503, errors=str(e))
+
+
+@nylas.route("/folders", methods=["GET"])
+@verify_user_and_token
+def get_folders(decoded_token):
+  try:
+    grant_id = decoded_token.get("grant_id")
+    nylas_adaptor = get_nylas_client()
+    folders = nylas_adaptor.get_folders_by_grant_id(grant_id)
+    return success_response(folders)
+  except Exception as e:
+    log.error("Folders fetching failed", str(e))
+    return error_response("Failed to fetch folders", 503, errors=str(e))
 

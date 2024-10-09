@@ -1,6 +1,6 @@
 from app.adaptors.adaptor import Adaptor
 from flask import current_app, Response
-from typing import Union
+from typing import Union, Dict, Any
 from app.utils.response_utils import error_response
 import requests
 import logging
@@ -56,15 +56,30 @@ class Nylas(Adaptor):
     except Exception as e:
       return error_response("An error occurred during authentication", status_code=503, errors=str(e))
     
-  def get_threads_by_grant_id(self, grant_id):
+  def get_threads_by_grant_id(self, grant_id, next_cursor, folder_id):
     """
     Nylas threads endpoint: https://developer.nylas.com/docs/api/v3/ecc/#get-/v3/grants/-grant_id-/threads
     """
-    # type: (str) -> Union[Dict[str, Any], Response]
+    # type: (str, str, str) -> Union[Dict[str, Any], Response]
     try:
       threads_url = f"{self.base_url}/grants/{grant_id}/threads?limit=20"
+      if next_cursor:
+        threads_url += f"&page_token={next_cursor}"
+      if folder_id:
+        threads_url += f"&in={folder_id}"
       response = requests.get(threads_url, headers=self.headers)
       return response.json()
     except Exception as e:
       log.error("An error occurred while fetching threads", str(e))
       return error_response("An error occurred while fetching threads using Nylas API", 503, errors=str(e))
+    
+
+  def get_folders_by_grant_id(self, grant_id):
+    # type: (str) -> Union[Dict[str, Any], Response]
+    try:
+      folders_url = f"{self.base_url}/grants/{grant_id}/folders?limit=40"
+      response = requests.get(folders_url, headers=self.headers)
+      return response.json()
+    except Exception as e:
+      log.error("An error occurred while fetching folders", str(e))
+      return error_response("An error occurred while fetching folders using Nylas API", 503, errors=str(e))
