@@ -3,6 +3,9 @@ from flask import current_app, Response
 from typing import Union
 from app.utils.response_utils import error_response
 import requests
+import logging
+
+log = logging.getLogger(__name__)
 class Nylas(Adaptor):
   def __init__(self, api_key):
     # type: (str) -> None
@@ -52,3 +55,16 @@ class Nylas(Adaptor):
       return result
     except Exception as e:
       return error_response("An error occurred during authentication", status_code=503, errors=str(e))
+    
+  def get_threads_by_grant_id(self, grant_id):
+    """
+    Nylas threads endpoint: https://developer.nylas.com/docs/api/v3/ecc/#get-/v3/grants/-grant_id-/threads
+    """
+    # type: (str) -> Union[Dict[str, Any], Response]
+    try:
+      threads_url = f"{self.base_url}/grants/{grant_id}/threads?limit=20"
+      response = requests.get(threads_url, headers=self.headers)
+      return response.json()
+    except Exception as e:
+      log.error("An error occurred while fetching threads", str(e))
+      return error_response("An error occurred while fetching threads using Nylas API", 503, errors=str(e))
