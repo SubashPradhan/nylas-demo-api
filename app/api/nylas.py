@@ -72,4 +72,20 @@ def get_folders(decoded_token):
   except Exception as e:
     log.error("Folders fetching failed", str(e))
     return error_response("Failed to fetch folders", 503, errors=str(e))
+  
+@nylas.route("/send", methods=["POST"])
+@verify_user_and_token
+def send_email(decoded_token):
+  try:
+    grant_id = decoded_token.get("grant_id")
+    send_payload = request.get_json()
+    nylas_adaptor = get_nylas_client()
+    response = nylas_adaptor.send_email(grant_id, send_payload)
+    if response.status_code == 200:
+      return success_response()
+    else:
+      return error_response("An error occurred while sending email", 503)
+  except Exception as e:
+    log.error("Messages send failed", str(e))
+    return error_response("Failed to send messages", 503, errors=str(e))
 
