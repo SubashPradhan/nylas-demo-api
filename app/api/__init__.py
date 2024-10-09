@@ -18,7 +18,6 @@ def verify_user_and_token(func):
         access_token = access_token.split(" ")[1]
         try:
           decoded_token = jwt.decode(access_token, current_app.config["JWT_SECRET_KEY"], algorithms=["HS256"])
-          print("This is decoded token", decoded_token)
           return func(decoded_token=decoded_token, *args, **kwargs)
         except jwt.ExpiredSignatureError:
           return error_response("Token has expired please reauthenticate", 401)
