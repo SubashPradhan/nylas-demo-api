@@ -31,7 +31,6 @@ Before getting started, ensure you have the following installed on your system:
   ```
 
 - Navigate to the project:
-cd nylas-demo-api
   
   ```bash
   cd nylas-demo-api
