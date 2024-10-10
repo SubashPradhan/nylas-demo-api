@@ -59,10 +59,19 @@ Before getting started, ensure you have the following installed on your system:
   ```
 
 ## Run the application
+- Before running the application, ensure you have the following environment variables set up. You can create a .env file in the root directory and add these variables from Nylas Dashboard:
+
+  ```bash
+  NYLAS_CLIENT_ID=<your-nylas-client-id>
+  NYLAS_API_KEY=<your-nylas-api-key>
+  JWT_SECRET_KEY=<your-jwt-secret-key>
+  ```
+
+- Initialize application:
   ```bash
   python run.py
 
-```
+  ```
 
 The API endpoints can be accessed via port 8000 at the following URL: http://127.0.0.1:8000
 
