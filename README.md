@@ -64,4 +64,9 @@ cd nylas-demo-api
   python run.py
 
 ```
+
+The API endpoints can be accessed via port 8000 at the following URL: - http://127.0.0.1:8000
+
+For example: http://127.0.0.1:8000/health
   
+### Happy Coding! 🚀
